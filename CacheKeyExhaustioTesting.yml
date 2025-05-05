@@ -1,0 +1,17 @@
+id: cache-key-exhaustion
+
+requests:
+  - method: GET
+    path: "{{BaseURL}}?cb={{random_int}}"
+    headers:
+      Pragma: akamai-x-get-cache-key
+    matchers:
+      - type: word
+        words:
+          - "X-Cache-Key"
+        part: header
+    extractors:
+      - type: regex
+        name: cache_key
+        regex:
+          - 'X-Cache-Key: (.*)'
