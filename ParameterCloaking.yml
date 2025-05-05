@@ -1,0 +1,23 @@
+id: cache-parameter-cloaking
+
+info:
+  name: Cache Parameter Cloaking
+  author: yourname
+  severity: medium
+  tags: cache,parameter
+
+variables:
+  payload: "<script>alert({{rand_int(1000,9999)}})</script>"
+
+http:
+  - method: GET
+    payloads:
+      params:
+        - "utm_content={{payload}}"
+        - "fbclid={{payload}}"
+
+    matchers:
+      - type: word
+        part: body
+        words:
+          - "{{payload}}"
