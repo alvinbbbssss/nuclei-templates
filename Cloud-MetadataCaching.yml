@@ -1,0 +1,23 @@
+id: cloud-metadata-caching
+
+info:
+  name: Cloud Metadata Caching
+  author: yourname
+  severity: high
+  tags: cache,cloud,metadata
+
+http:
+  - method: GET
+    path:
+      - "/latest/meta-data/"
+      - "/metadata/v1/"
+
+    headers:
+      X-Forwarded-Host: "169.254.169.254"
+
+    matchers:
+      - type: word
+        part: body
+        words:
+          - "instance-id"
+          - "security-credentials"
