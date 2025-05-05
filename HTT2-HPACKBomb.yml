@@ -1,0 +1,19 @@
+id: http2-hpack-cache-poison
+
+info:
+  name: HTTP/2 HPACK Cache Poisoning
+  author: yourname
+  severity: medium
+  tags: cache,http2,hpack
+
+http:
+  - method: GET
+    http2: true
+    headers:
+      x-hpack-bomb: "A"*10000
+
+    matchers:
+      - type: dsl
+        dsl:
+          - 'status_code == 200'
+          - '!contains(body, "AAAAAAAAAA")'
