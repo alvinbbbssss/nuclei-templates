@@ -1,0 +1,106 @@
+id: web-cache-poisoning
+
+info:
+  name: Advanced Web Cache Poisoning Detection
+  author: yourname
+  severity: high
+  description: |
+    Detects web cache poisoning vulnerabilities by testing unkeyed headers,
+    cache key variations, and poisoning vectors.
+  reference:
+    - https://portswigger.net/research/web-cache-poisoning
+  tags: cache, poisoning, misconfiguration
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+      - "{{BaseURL}}/search?q=test"
+      - "{{BaseURL}}/api/data"
+
+    headers:
+      Pragma: akamai-x-get-cache-key
+      X-Forwarded-Host: evil.com
+      X-Forwarded-Scheme: http
+      X-Original-URL: /malicious
+      Accept-Encoding: gzip, deflate, br
+
+    matchers:
+      - type: word
+        words:
+          - "evil.com"
+          - "X-Cache-Key"
+          - "X-Cache: HIT"
+          - "/malicious"
+        condition: or
+
+      - type: status
+        status:
+          - 200
+
+    extractors:
+      - type: regex
+        name: cache_key
+        regex:
+          - 'X-Cache-Key: (.*)'
+
+      - type: regex
+        name: vary_header
+        regex:
+          - 'Vary: (.*)'
+
+  - method: GET
+    path: "{{BaseURL}}/_cache_poison_test_{{random_int}}"
+    headers:
+      X-Forwarded-Host: evil.com
+
+    matchers:
+      - type: word
+        part: header
+        words:
+          - "X-Cache: HIT"
+        condition: and
+      - type: word
+        words:
+          - "evil.com"
+
+  - method: GET
+    path: "{{BaseURL}}/search?q=test{{random_int}}"
+    headers:
+      User-Agent: "Mozilla/5.0 (CachePoisonTest)"
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: header
+        words:
+          - "X-Cache: HIT"
+      - type: word
+        part: header
+        words:
+          - "Age:"
+
+# DOM-based cache poisoning check
+  - method: GET
+    path: "{{BaseURL}}"
+    headers:
+      X-Forwarded-Host: evil.com
+
+    matchers:
+      - type: word
+        part: body
+        words:
+          - "evil.com"
+          - "window.location.href = 'http://evil.com'"
+        condition: or
+
+# Cache key confusion test
+  - method: GET
+    path: "{{BaseURL}}/profile"
+    headers:
+      Accept-Language: "../malicious"
+
+    matchers:
+      - type: word
+        words:
+          - "malicious"
