@@ -1,0 +1,25 @@
+id: dom-cache-poisoning
+
+info:
+  name: DOM-Based Cache Poisoning
+  author: yourname
+  severity: high
+  tags: cache,xss,dom
+
+variables:
+  payload: "\\\"-alert({{rand_int(1000,9999)}})-\\\""
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/static/main.js"
+      - "{{BaseURL}}/assets/*.js"
+
+    headers:
+      X-Forwarded-Host: "{{payload}}"
+
+    matchers:
+      - type: regex
+        part: body
+        regex:
+          - '\\\\"-alert\([\d]+\)-\\\\"'
