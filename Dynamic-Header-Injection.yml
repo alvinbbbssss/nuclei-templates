@@ -1,0 +1,15 @@
+id: cache-poisoning-dynamic-headers
+
+requests:
+  - method: GET
+    path: "{{BaseURL}}"
+    headers:
+      X-Forwarded-Host: "evil-{{random_int}}.com"
+      X-Forwarded-Scheme: "http"
+      X-Original-URL: "/malicious-{{random_int}}"
+    matchers:
+      - type: regex
+        regex:
+          - 'evil-\d+\.com'
+          - '/malicious-\d+'
+        part: body
