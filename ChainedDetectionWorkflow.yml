@@ -1,0 +1,14 @@
+id: cache-probe
+
+requests:
+  - method: GET
+    path: "{{BaseURL}}"
+    headers:
+      Cache-Control: max-age=0
+    matchers:
+      - type: word
+        words:
+          - "X-Cache:"
+          - "Age:"
+        condition: or
+        part: header
