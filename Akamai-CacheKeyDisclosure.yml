@@ -1,0 +1,27 @@
+id: akamai-cache-key-disclosure
+
+info:
+  name: Akamai Cache Key Disclosure
+  author: yourname
+  severity: info
+  tags: cache,akamai,disclosure
+
+http:
+  - method: GET
+    headers:
+      Pragma: akamai-x-get-cache-key
+      X-Forwarded-Host: "evil-{{rand_int(1000,9999)}}.com"
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: header
+        words:
+          - "X-Cache-Key:"
+          - "X-True-Cache-Key:"
+        condition: or
+
+      - type: regex
+        part: header
+        regex:
+          - 'X-(True-)?Cache-Key:.*evil-[\d]+\.com'
